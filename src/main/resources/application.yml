@@ -5,8 +5,7 @@ spring:
   data:
     mongodb:
       uri: "mongodb+srv://arnav:Arnav%402006@cluster0.fj8gi7o.mongodb.net/Musify?retryWrites=true&w=majority&appName=Cluster0"
-# arnav
-# Arnav@2006
+
   security:
     oauth2:
       client:
@@ -18,4 +17,8 @@ spring:
               - openid
               - profile
               - email
-        
+
+jwt:
+  secret: "this_is_a_very_long_secure_secret_key_123456"
+  expiration-ms: 86400000
+    # Default: 1 day (in milliseconds)
