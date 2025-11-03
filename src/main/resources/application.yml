@@ -5,7 +5,6 @@ spring:
   data:
     mongodb:
       uri: "mongodb+srv://arnav:Arnav%402006@cluster0.fj8gi7o.mongodb.net/Musify?retryWrites=true&w=majority&appName=Cluster0"
-
   security:
     oauth2:
       client:
@@ -18,7 +17,23 @@ spring:
               - profile
               - email
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 50MB
+
+  web:
+    resources:
+      static-locations: file:uploads/
+
 jwt:
   secret: "this_is_a_very_long_secure_secret_key_123456"
   expiration-ms: 86400000
-    # Default: 1 day (in milliseconds)
+
+file:
+  upload-dir: uploads/
+
+cors:
+  allowed-origins: "http://localhost:3000"
+  allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+  allowed-headers: "*"

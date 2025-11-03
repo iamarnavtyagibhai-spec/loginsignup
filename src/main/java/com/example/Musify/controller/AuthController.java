@@ -48,7 +48,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,79 +61,81 @@ import java.util.Map;
 public class AuthController {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final TokenBlacklistService blacklistService;
 
-    public AuthController(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtUtil jwtUtil, TokenBlacklistService blacklistService) {
+    public AuthController(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtUtil jwtUtil,
+                          TokenBlacklistService blacklistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.blacklistService = blacklistService;
     }
 
-    // Manual login -> returns { token: "..." }
+    // LOGIN → returns JWT token
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        String emailOrUsername = body.get("email"); // you can accept username too
+        String emailOrUsername = body.get("email"); // or username
         String password = body.get("password");
-        if (emailOrUsername == null || password == null) {
+
+        if (emailOrUsername == null || password == null)
             throw new BadCredentialsException("Missing credentials");
-        }
 
         User user = userRepository.findByEmail(emailOrUsername)
                 .orElseGet(() -> userRepository.findByUsername(emailOrUsername).orElse(null));
 
-        if (user == null || user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
+        if (user == null || user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword()))
             throw new BadCredentialsException("Invalid credentials");
-        }
 
         String token = jwtUtil.generateToken(user.getEmail());
+
         Map<String, Object> resp = new HashMap<>();
+        resp.put("message", "Login successful");
         resp.put("token", token);
         return ResponseEntity.ok(resp);
     }
 
-    // Logout: blacklist token (sent in Authorization header)
+    // LOGOUT → blacklist token
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             blacklistService.blacklist(token);
         }
-        return ResponseEntity.ok(Map.of("message", "Logged out"));
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
-    // Return info for current user (works for both OAuth and JWT flows)
+    // AUTHENTICATED USER INFO (JWT or OAuth)
     @GetMapping("/me")
-    public ResponseEntity<?> me(@AuthenticationPrincipal(expression = "attributes") Map<String, Object> oauthAttrs, Authentication authentication) {
-        // If JWT flow: Authentication.getPrincipal() contains subject (we set subject to email)
-        if (authentication != null && authentication.getPrincipal() instanceof String) {
-            String subject = (String) authentication.getPrincipal();
-            User user = userRepository.findByEmail(subject).orElse(null);
+    public ResponseEntity<?> me(
+            @AuthenticationPrincipal(expression = "attributes") Map<String, Object> oauthAttrs,
+            Authentication authentication) {
+
+        // For JWT
+        if (authentication != null && authentication.getPrincipal() instanceof String email) {
+            User user = userRepository.findByEmail(email).orElse(null);
             if (user != null) {
                 Map<String, Object> resp = new HashMap<>();
                 resp.put("id", user.getId());
                 resp.put("name", user.getName());
                 resp.put("email", user.getEmail());
                 resp.put("username", user.getUsername());
-                resp.put("provider", user.getProvider());
-                resp.put("providerId", user.getProviderId());
                 return ResponseEntity.ok(resp);
             }
         }
 
-        // If OAuth flow, @AuthenticationPrincipal OAuth2User attributes
+        // For OAuth2 (if used later)
         if (oauthAttrs != null) {
             Map<String, Object> resp = new HashMap<>();
             resp.put("name", oauthAttrs.get("name"));
             resp.put("email", oauthAttrs.get("email"));
             resp.put("picture", oauthAttrs.get("picture"));
-            resp.put("providerId", oauthAttrs.get("sub"));
             return ResponseEntity.ok(resp);
         }
 
         return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
     }
 }
-

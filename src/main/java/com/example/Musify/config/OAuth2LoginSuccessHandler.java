@@ -22,28 +22,6 @@
 //         this.userService = userService;
 //     }
 
-//     @Override
-//     public void onAuthenticationSuccess(
-//             HttpServletRequest request,
-//             HttpServletResponse response,
-//             Authentication authentication) throws IOException, ServletException {
-
-//         if (authentication instanceof OAuth2AuthenticationToken token) {
-//             OAuth2User user = token.getPrincipal();
-//             Map<String, Object> attributes = user.getAttributes();
-
-//             String provider = token.getAuthorizedClientRegistrationId(); // google, github, etc.
-//             String providerId = (String) attributes.get("sub"); // Google user ID
-//             String email = (String) attributes.get("email");
-//             String name = (String) attributes.get("name");
-
-//             // ✅ Save or update the user in MongoDB
-//             userService.upsert(provider, providerId, email, name);
-//         }
-
-//         // Redirect to your frontend or profile endpoint
-//         response.sendRedirect("/api/auth/me");
-//     }
 // }
 package com.example.Musify.config;
 
