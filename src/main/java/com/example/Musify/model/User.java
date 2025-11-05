@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Email;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection = "users")
 public class User {
@@ -25,6 +27,8 @@ public class User {
 
     private String provider;
     private String providerId;
+    
+    private List<String> wishlist = new ArrayList<>();
 
     public User() {}
 
@@ -56,4 +60,7 @@ public class User {
 
     public String getProviderId() { return providerId; }
     public void setProviderId(String providerId) { this.providerId = providerId; }
+    
+    public List<String> getWishlist() { return wishlist; }
+    public void setWishlist(List<String> wishlist) { this.wishlist = wishlist; }
 }

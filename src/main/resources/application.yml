@@ -25,10 +25,6 @@ spring:
       max-file-size: 20MB
       max-request-size: 50MB
 
-  web:
-    resources:
-      static-locations: file:uploads/
-
 jwt:
   secret: "this_is_a_very_long_secure_secret_key_123456"
   expiration-ms: 86400000
