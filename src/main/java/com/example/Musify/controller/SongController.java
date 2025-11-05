@@ -28,7 +28,10 @@ public class SongController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Song>> getAllSongs() {
+    public ResponseEntity<List<Song>> getAllSongs(@RequestParam(required = false) String search) {
+        if (search != null && !search.trim().isEmpty()) {
+            return ResponseEntity.ok(songService.searchSongs(search));
+        }
         return ResponseEntity.ok(songService.getAllSongs());
     }
 }

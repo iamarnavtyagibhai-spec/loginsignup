@@ -55,5 +55,17 @@ public class SongServiceImpl implements SongService {
     public List<Song> getAllSongs() {
         return songRepository.findAll();
     }
+
+    @Override
+    public List<Song> searchSongs(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return songRepository.findAll();
+        }
+        String trimmedQuery = query.trim();
+        // Search in both title and artist fields (case-insensitive)
+        List<Song> results = songRepository.findByTitleContainingIgnoreCaseOrArtistContainingIgnoreCase(trimmedQuery, trimmedQuery);
+        // Return results (will be empty list if no matches found)
+        return results;
+    }
 }
 
