@@ -5,6 +5,8 @@ import com.example.Musify.service.SongService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.HttpHeaders;
@@ -49,9 +51,8 @@ public class SongController {
     public ResponseEntity<InputStreamResource> getFile(@PathVariable String fileId) {
         try {
             ObjectId objectId = new ObjectId(fileId);
-            com.mongodb.client.gridfs.model.GridFSFile gridFSFile = gridFsTemplate.findOne(
-                    com.mongodb.client.model.Filters.eq("_id", objectId)
-            );
+            Query query = new Query(Criteria.where("_id").is(objectId));
+            com.mongodb.client.gridfs.model.GridFSFile gridFSFile = gridFsTemplate.findOne(query);
             
             if (gridFSFile == null) {
                 return ResponseEntity.notFound().build();
