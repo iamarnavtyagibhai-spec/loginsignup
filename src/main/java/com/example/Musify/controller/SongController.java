@@ -48,7 +48,16 @@ public class SongController {
     @GetMapping("/file/{fileId}")
     public ResponseEntity<InputStreamResource> getFile(@PathVariable String fileId) {
         try {
-            GridFsResource resource = gridFsTemplate.getResource(new ObjectId(fileId));
+            ObjectId objectId = new ObjectId(fileId);
+            com.mongodb.client.gridfs.model.GridFSFile gridFSFile = gridFsTemplate.findOne(
+                    com.mongodb.client.model.Filters.eq("_id", objectId)
+            );
+            
+            if (gridFSFile == null) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            GridFsResource resource = gridFsTemplate.getResource(gridFSFile);
             if (resource.exists()) {
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.parseMediaType(resource.getContentType()));
