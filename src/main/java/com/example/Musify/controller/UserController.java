@@ -56,7 +56,7 @@ public class UserController {
         this.signupService = signupService;
     }
 
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", consumes = "application/json", produces = "application/json")
     public Map<String, Object> signup(@RequestBody User user) {
         Map<String, Object> response = new HashMap<>();
         User saved = signupService.signup(user);

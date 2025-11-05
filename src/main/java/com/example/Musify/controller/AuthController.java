@@ -46,7 +46,6 @@ import com.example.Musify.service.TokenBlacklistService;
 import com.example.Musify.util.JwtUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -76,19 +75,30 @@ public class AuthController {
     }
 
     // LOGIN → returns JWT token
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        String emailOrUsername = body.get("email"); // or username
+        String email = body.get("email");
+        String username = body.get("username");
         String password = body.get("password");
 
-        if (emailOrUsername == null || password == null)
-            throw new BadCredentialsException("Missing credentials");
+        if ((email == null || email.isBlank()) && (username == null || username.isBlank()) || password == null || password.isBlank()) {
+            return ResponseEntity.status(400).body(Map.of(
+                    "error", "Provide email or username, and password"
+            ));
+        }
 
-        User user = userRepository.findByEmail(emailOrUsername)
-                .orElseGet(() -> userRepository.findByUsername(emailOrUsername).orElse(null));
+        User user = null;
+        if (email != null && !email.isBlank()) {
+            user = userRepository.findByEmail(email.trim().toLowerCase()).orElse(null);
+        } else if (username != null && !username.isBlank()) {
+            user = userRepository.findByUsername(username.trim()).orElse(null);
+        }
 
-        if (user == null || user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword()))
-            throw new BadCredentialsException("Invalid credentials");
+        if (user == null || user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "error", "Invalid credentials"
+            ));
+        }
 
         String token = jwtUtil.generateToken(user.getEmail());
 

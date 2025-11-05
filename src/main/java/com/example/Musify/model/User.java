@@ -1,8 +1,10 @@
 package com.example.Musify.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Email;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Document(collection = "users")
 public class User {
@@ -10,10 +12,15 @@ public class User {
     @Id
     private String id;
     private String name;
+
+    @Email
+    @Indexed(unique = true, sparse = true)
     private String email;
+
+    @Indexed(unique = true, sparse = true)
     private String username;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String provider;

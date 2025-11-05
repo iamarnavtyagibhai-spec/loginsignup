@@ -69,10 +69,9 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // 🔐 Must be Base64-encoded and at least 32 bytes long
-    // You can generate a valid one using: 
-    //   Base64.getEncoder().encodeToString("your_secure_key_1234567890".getBytes());
-    private static final String SECRET = "eW91cl9zZWN1cmVfa2V5XzEyMzQ1Njc4OTA="; // Base64 of "your_secure_key_1234567890"
+    // 🔐 Must be Base64-encoded and at least 32 bytes long (256 bits)
+    // This is a 256+ bit Base64 encoded secret for HMAC-SHA256
+    private static final String SECRET = "dGhpc19pc19hX3ZlcnlfbG9uZ19zZWN1cmVfc2VjcmV0X2tleV9mb3JfbXVzaWZ5X2FwcF8yMDI0XzEyMzQ1Njc4OTA="; // 256+ bit Base64 encoded secret
 
     private static final long EXPIRATION_TIME = 86400000; // 1 day
 

@@ -130,6 +130,12 @@ public class SecurityConfigv2 {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
+            // Ensure APIs return 401 JSON instead of redirecting to OAuth login page
+            .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(401);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Unauthorized\"}");
+            }))
             // ✅ Enable Google OAuth2 login
             .oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2LoginSuccessHandler)
