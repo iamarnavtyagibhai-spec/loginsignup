@@ -2,7 +2,14 @@ package com.example.Musify.controller;
 
 import com.example.Musify.model.Song;
 import com.example.Musify.service.SongService;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +24,9 @@ public class SongController {
 
     @Autowired
     private SongService songService;
+    
+    @Autowired
+    private GridFsTemplate gridFsTemplate;
 
     @PostMapping("/upload")
     public ResponseEntity<Song> uploadSong(
@@ -33,5 +43,26 @@ public class SongController {
             return ResponseEntity.ok(songService.searchSongs(search));
         }
         return ResponseEntity.ok(songService.getAllSongs());
+    }
+
+    @GetMapping("/file/{fileId}")
+    public ResponseEntity<InputStreamResource> getFile(@PathVariable String fileId) {
+        try {
+            GridFsResource resource = gridFsTemplate.getResource(new ObjectId(fileId));
+            if (resource.exists()) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.parseMediaType(resource.getContentType()));
+                headers.setContentLength(resource.contentLength());
+                headers.set("Content-Disposition", "inline; filename=\"" + resource.getFilename() + "\"");
+                
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(new InputStreamResource(resource.getInputStream()));
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

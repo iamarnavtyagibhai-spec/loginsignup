@@ -126,7 +126,8 @@ public class SecurityConfigv2 {
                     "/api/auth/login",
                     "/api/auth/signup",
                     "/oauth2/**",
-                    "/api/public/**"
+                    "/api/public/**",
+                    "/api/songs/file/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
