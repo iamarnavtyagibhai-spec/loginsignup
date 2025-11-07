@@ -40,3 +40,6 @@ target/
 # Environment / Credentials
 .env
 
+# Uploads folder (songs are stored in MongoDB GridFS, not in local files)
+uploads/*
+!uploads/.gitkeep

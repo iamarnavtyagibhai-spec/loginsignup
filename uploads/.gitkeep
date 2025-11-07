@@ -1,0 +1,3 @@
+# This file keeps the uploads folder in git
+# Songs are stored in MongoDB GridFS, not in this folder
+
