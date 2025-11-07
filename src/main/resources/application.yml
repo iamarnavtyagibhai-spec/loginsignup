@@ -35,7 +35,7 @@ file:
 cloudinary:
   cloud-name: dapdq6wbe
   api-key: 947571384462528
-  api-secret: j9Eiv1o0W4uz5HvnJ
+  api-secret: j9Eiv1o0W4uz5HvnJhBZKxe20GQ
 
 cors:
   allowed-origins: "http://localhost:3000"

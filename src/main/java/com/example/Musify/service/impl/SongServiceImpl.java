@@ -26,30 +26,46 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public Song uploadSong(MultipartFile file, String title, String artist) throws IOException {
-        // Create unique filename
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        try {
+            // Create unique filename - sanitize to avoid special characters
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null) {
+                originalFilename = "song";
+            }
+            
+            // Remove file extension and sanitize filename
+            String baseName = originalFilename.replaceAll("\\.[^.]+$", "");
+            // Remove special characters and replace spaces with underscores
+            String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9_-]", "_").replaceAll("_+", "_");
+            
+            // Use UUID + sanitized name for public_id
+            String publicId = "musify/songs/" + UUID.randomUUID() + "_" + sanitizedBaseName;
 
-        // Upload file to Cloudinary
-        Map<String, Object> uploadParams = ObjectUtils.asMap(
-                "resource_type", "auto",
-                "folder", "musify/songs",
-                "public_id", fileName.replaceAll("\\.[^.]+$", ""), // Remove file extension
-                "overwrite", false
-        );
+            // Upload file to Cloudinary
+            Map<String, Object> uploadParams = ObjectUtils.asMap(
+                    "resource_type", "auto",
+                    "folder", "musify/songs",
+                    "public_id", publicId,
+                    "overwrite", false,
+                    "use_filename", false
+            );
 
-        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
-        String publicId = (String) uploadResult.get("public_id");
-        String secureUrl = (String) uploadResult.get("secure_url");
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
+            String uploadedPublicId = (String) uploadResult.get("public_id");
+            String secureUrl = (String) uploadResult.get("secure_url");
 
-        // Create Song object
-        Song song = new Song();
-        song.setTitle(title);
-        song.setArtist(artist);
-        song.setFilePath(publicId); // Store Cloudinary public ID
-        song.setUrl(secureUrl); // Store Cloudinary URL
+            // Create Song object
+            Song song = new Song();
+            song.setTitle(title);
+            song.setArtist(artist);
+            song.setFilePath(uploadedPublicId); // Store Cloudinary public ID
+            song.setUrl(secureUrl); // Store Cloudinary URL
 
-        // Save to MongoDB
-        return songRepository.save(song);
+            // Save to MongoDB
+            return songRepository.save(song);
+        } catch (Exception e) {
+            throw new IOException("Failed to upload song to Cloudinary: " + e.getMessage(), e);
+        }
     }
 
     @Override

@@ -27,6 +27,23 @@ public class RestExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(java.io.IOException.class)
+    public ResponseEntity<Map<String, Object>> handleIOException(java.io.IOException ex) {
+        String errorMessage = ex.getMessage();
+        // Check if it's a Cloudinary signature error
+        if (errorMessage != null && errorMessage.contains("Invalid Signature")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "error", "Cloudinary authentication failed. Please check your API credentials in application.yml. Make sure the API Secret is complete and correct.",
+                            "details", errorMessage
+                    ));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", errorMessage != null ? errorMessage : "File upload failed"
+                ));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleAll(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

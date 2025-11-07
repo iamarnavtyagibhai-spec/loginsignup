@@ -64,3 +64,4 @@ public class User {
     public List<String> getWishlist() { return wishlist; }
     public void setWishlist(List<String> wishlist) { this.wishlist = wishlist; }
 }
+
