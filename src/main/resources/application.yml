@@ -32,6 +32,11 @@ jwt:
 file:
   upload-dir: uploads/
 
+cloudinary:
+  cloud-name: dapdq6wbe
+  api-key: 947571384462528
+  api-secret: j9Eiv1o0W4uz5HvnJ
+
 cors:
   allowed-origins: "http://localhost:3000"
   allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
