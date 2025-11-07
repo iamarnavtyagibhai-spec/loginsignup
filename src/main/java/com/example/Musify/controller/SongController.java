@@ -51,8 +51,9 @@ public class SongController {
     public ResponseEntity<InputStreamResource> getFile(@PathVariable String fileId) {
         try {
             ObjectId objectId = new ObjectId(fileId);
-            Query query = new Query(Criteria.where("_id").is(objectId));
-            com.mongodb.client.gridfs.model.GridFSFile gridFSFile = gridFsTemplate.findOne(query);
+            com.mongodb.client.gridfs.model.GridFSFile gridFSFile = gridFsTemplate.findOne(
+                    com.mongodb.client.model.Filters.eq("_id", objectId)
+            );
             
             if (gridFSFile == null) {
                 return ResponseEntity.notFound().build();

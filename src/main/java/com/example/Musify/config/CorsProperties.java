@@ -22,6 +22,7 @@ public class CorsProperties {
         return allowedMethods;
     }
 
+
     public void setAllowedMethods(String allowedMethods) {
         this.allowedMethods = allowedMethods;
     }
@@ -34,4 +35,5 @@ public class CorsProperties {
         this.allowedHeaders = allowedHeaders;
     }
 }
+
 
