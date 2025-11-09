@@ -5,10 +5,15 @@ import com.cloudinary.utils.ObjectUtils;
 import com.example.Musify.model.Song;
 import com.example.Musify.repository.SongRepository;
 import com.example.Musify.service.SongService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,53 +24,43 @@ public class SongServiceImpl implements SongService {
     private final SongRepository songRepository;
     private final Cloudinary cloudinary;
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
     public SongServiceImpl(SongRepository songRepository, Cloudinary cloudinary) {
         this.songRepository = songRepository;
         this.cloudinary = cloudinary;
     }
 
     @Override
-    public Song uploadSong(MultipartFile file, String title, String artist) throws IOException {
-        try {
-            // Create unique filename - sanitize to avoid special characters
-            String originalFilename = file.getOriginalFilename();
-            if (originalFilename == null) {
-                originalFilename = "song";
-            }
-            
-            // Remove file extension and sanitize filename
-            String baseName = originalFilename.replaceAll("\\.[^.]+$", "");
-            // Remove special characters and replace spaces with underscores
-            String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9_-]", "_").replaceAll("_+", "_");
-            
-            // Use UUID + sanitized name for public_id
-            String publicId = "musify/songs/" + UUID.randomUUID() + "_" + sanitizedBaseName;
+    public Song uploadSong(MultipartFile file, MultipartFile image, String title, String artist) throws IOException {
 
-            // Upload file to Cloudinary
-            Map<String, Object> uploadParams = ObjectUtils.asMap(
-                    "resource_type", "auto",
-                    "folder", "musify/songs",
-                    "public_id", publicId,
-                    "overwrite", false,
-                    "use_filename", false
-            );
+        // Upload audio to Cloudinary
+        Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap("resource_type", "video")
+        );
+        String audioUrl = (String) uploadResult.get("secure_url");
 
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
-            String uploadedPublicId = (String) uploadResult.get("public_id");
-            String secureUrl = (String) uploadResult.get("secure_url");
+        // Ensure uploads directory exists
+        Path path = Paths.get(uploadDir);
+        Files.createDirectories(path);
 
-            // Create Song object
-            Song song = new Song();
-            song.setTitle(title);
-            song.setArtist(artist);
-            song.setFilePath(uploadedPublicId); // Store Cloudinary public ID
-            song.setUrl(secureUrl); // Store Cloudinary URL
+        // Save image locally (correct path join)
+        String imageFileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+        File saveFile = new File(uploadDir, imageFileName); // ✅ FIXED
 
-            // Save to MongoDB
-            return songRepository.save(song);
-        } catch (Exception e) {
-            throw new IOException("Failed to upload song to Cloudinary: " + e.getMessage(), e);
-        }
+        image.transferTo(saveFile);
+
+        String imagePath = "/images/" + imageFileName;
+
+        Song song = new Song();
+        song.setTitle(title);
+        song.setArtist(artist);
+        song.setAudioUrl(audioUrl);
+        song.setImagePath(imagePath);
+
+        return songRepository.save(song);
     }
 
     @Override
@@ -75,14 +70,6 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public List<Song> searchSongs(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return songRepository.findAll();
-        }
-        String trimmedQuery = query.trim();
-        // Search in both title and artist fields (case-insensitive)
-        List<Song> results = songRepository.findByTitleContainingIgnoreCaseOrArtistContainingIgnoreCase(trimmedQuery, trimmedQuery);
-        // Return results (will be empty list if no matches found)
-        return results;
+        return songRepository.findByTitleContainingIgnoreCaseOrArtistContainingIgnoreCase(query, query);
     }
 }
-

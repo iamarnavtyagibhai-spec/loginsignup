@@ -30,7 +30,8 @@ jwt:
   expiration-ms: 86400000
 
 file:
-  upload-dir: uploads/
+  upload-dir: "${user.dir}/uploads/images/"
+
 
 cloudinary:
   cloud-name: dapdq6wbe

@@ -18,15 +18,18 @@ public class SongController {
     @Autowired
     private SongService songService;
 
+    // ✅ Upload Song (audio → Cloudinary, image → Local folder)
     @PostMapping("/upload")
     public ResponseEntity<Song> uploadSong(
-            @RequestParam("file") MultipartFile file,
+            @RequestParam("file") MultipartFile file,     // audio file
+            @RequestParam("image") MultipartFile image,   // album cover image
             @RequestParam("title") String title,
             @RequestParam("artist") String artist
     ) throws IOException {
-        return ResponseEntity.ok(songService.uploadSong(file, title, artist));
+        return ResponseEntity.ok(songService.uploadSong(file, image, title, artist));
     }
 
+    // ✅ Get All Songs
     @GetMapping
     public ResponseEntity<List<Song>> getAllSongs(@RequestParam(required = false) String search) {
         if (search != null && !search.trim().isEmpty()) {

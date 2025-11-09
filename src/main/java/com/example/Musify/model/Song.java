@@ -10,8 +10,8 @@ public class Song {
     private String id;
     private String title;
     private String artist;
-    private String filePath;
-    private String url;
+    private String audioUrl;  // Cloudinary song URL
+    private String imagePath; // Local image path (like /images/file.jpg)
 
     public String getId() {
         return id;
@@ -19,28 +19,32 @@ public class Song {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getTitle() {
         return title;
     }
     public void setTitle(String title) {
         this.title = title;
     }
+
     public String getArtist() {
         return artist;
     }
     public void setArtist(String artist) {
         this.artist = artist;
     }
-    public String getFilePath() {
-        return filePath;
+
+    public String getAudioUrl() {
+        return audioUrl;
     }
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
     }
-    public String getUrl() {
-        return url;
+
+    public String getImagePath() {
+        return imagePath;
     }
-    public void setUrl(String url) {
-        this.url = url;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }

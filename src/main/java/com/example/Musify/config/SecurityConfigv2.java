@@ -1,75 +1,3 @@
-// package com.example.Musify.config;
-
-// import com.example.Musify.security.JwtAuthenticationFilter;
-// import com.example.Musify.service.TokenBlacklistService;
-// import com.example.Musify.util.JwtUtil;
-// import org.springframework.context.annotation.Bean;
-// import org.springframework.context.annotation.Configuration;
-// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-// import org.springframework.security.config.http.SessionCreationPolicy;
-// import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-// import org.springframework.security.web.SecurityFilterChain;
-// import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-// @Configuration
-// public class SecurityConfig {
-
-//     private final OAuth2LoginSuccessHandler successHandler;
-//     private final JwtUtil jwtUtil;
-//     private final TokenBlacklistService blacklistService;
-
-//     public SecurityConfig(OAuth2LoginSuccessHandler successHandler, JwtUtil jwtUtil, TokenBlacklistService blacklistService) {
-//         this.successHandler = successHandler;
-//         this.jwtUtil = jwtUtil;
-//         this.blacklistService = blacklistService;
-//     }
-
-//     @Bean
-//     public BCryptPasswordEncoder passwordEncoder() {
-//         return new BCryptPasswordEncoder();
-//     }
-
-//     @Bean
-//     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//         // JWT filter
-//         JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, blacklistService);
-
-//         http
-//             // Disable CSRF for APIs
-//             .csrf(csrf -> csrf.disable())
-
-//             // Stateless session management
-//             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-//             // Endpoint security
-//             .authorizeHttpRequests(auth -> auth
-//                 .requestMatchers(
-//                     "/", 
-//                     "/api/public/**",
-//                     "/api/auth/**",
-//                     "/oauth2/**"
-//                 ).permitAll()
-//                 .anyRequest().authenticated()
-//             )
-
-//             // OAuth2 login
-//             .oauth2Login(oauth2 -> oauth2
-//                 .successHandler(successHandler)
-//             )
-
-//             // Logout
-//             .logout(logout -> logout
-//                 .logoutUrl("/api/auth/logout")
-//                 .logoutSuccessUrl("/api/public/logout-success")
-//                 .permitAll()
-//             );
-
-//         // Add JWT filter before Spring Security's UsernamePasswordAuthenticationFilter
-//         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-//         return http.build();
-//     }
-// }
 package com.example.Musify.config;
 
 import com.example.Musify.security.JwtAuthenticationFilter;
@@ -118,6 +46,7 @@ public class SecurityConfigv2 {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -127,24 +56,26 @@ public class SecurityConfigv2 {
                     "/api/auth/signup",
                     "/oauth2/**",
                     "/api/public/**",
-                    "/api/songs/file/**"
+                    "/api/songs",
+                    "/api/songs/**",      // ✅ Songs list + search allowed
+                    "/api/songs/file/**",
+                    "/images/**"          // ✅ Image download allowed
                 ).permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers(
+                    "/api/songs/upload"   // ✅ Only upload requires token
+                ).authenticated()
+                .anyRequest().permitAll()
             )
-            // Ensure APIs return 401 JSON instead of redirecting to OAuth login page
             .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authException) -> {
                 response.setStatus(401);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"error\":\"Unauthorized\"}");
             }))
-            // ✅ Enable Google OAuth2 login
-            .oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2LoginSuccessHandler)
-            );
+            .oauth2Login(oauth -> oauth.successHandler(oAuth2LoginSuccessHandler));
 
-        // ✅ Enable JWT filter for API authentication
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+
