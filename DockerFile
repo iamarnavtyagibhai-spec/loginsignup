@@ -4,8 +4,8 @@ WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Stage 2: Runtime image (lightweight)
-FROM openjdk:17-jdk-slim
+# Stage 2: Runtime image (lightweight + stable)
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 ENV PORT=8081
 EXPOSE 8081
