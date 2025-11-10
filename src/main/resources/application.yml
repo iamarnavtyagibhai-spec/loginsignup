@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: ${PORT:8081}
   error:
     whitelabel:
       enabled: false
@@ -31,7 +31,6 @@ jwt:
 
 file:
   upload-dir: "${user.dir}/uploads/images/"
-
 
 cloudinary:
   cloud-name: dapdq6wbe
