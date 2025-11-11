@@ -5,27 +5,18 @@ import com.cloudinary.utils.ObjectUtils;
 import com.example.Musify.model.Song;
 import com.example.Musify.repository.SongRepository;
 import com.example.Musify.service.SongService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class SongServiceImpl implements SongService {
 
     private final SongRepository songRepository;
     private final Cloudinary cloudinary;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
 
     public SongServiceImpl(SongRepository songRepository, Cloudinary cloudinary) {
         this.songRepository = songRepository;
@@ -35,30 +26,26 @@ public class SongServiceImpl implements SongService {
     @Override
     public Song uploadSong(MultipartFile file, MultipartFile image, String title, String artist) throws IOException {
 
-        // Upload audio to Cloudinary
-        Map<?, ?> uploadResult = cloudinary.uploader().upload(
+        // ✅ Upload audio to Cloudinary
+        Map<?, ?> audioUpload = cloudinary.uploader().upload(
                 file.getBytes(),
-                ObjectUtils.asMap("resource_type", "video")
+                ObjectUtils.asMap("resource_type", "video") // audio uploaded as video
         );
-        String audioUrl = (String) uploadResult.get("secure_url");
+        String audioUrl = (String) audioUpload.get("secure_url");
 
-        // Ensure uploads directory exists
-        Path path = Paths.get(uploadDir);
-        Files.createDirectories(path);
+        // ✅ Upload image to Cloudinary
+        Map<?, ?> imageUpload = cloudinary.uploader().upload(
+                image.getBytes(),
+                ObjectUtils.emptyMap() // default image upload
+        );
+        String imageUrl = (String) imageUpload.get("secure_url");
 
-        // Save image locally (correct path join)
-        String imageFileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-        File saveFile = new File(uploadDir, imageFileName); // ✅ FIXED
-
-        image.transferTo(saveFile);
-
-        String imagePath = "/images/" + imageFileName;
-
+        // ✅ Save song record in DB
         Song song = new Song();
         song.setTitle(title);
         song.setArtist(artist);
         song.setAudioUrl(audioUrl);
-        song.setImagePath(imagePath);
+        song.setImagePath(imageUrl); // store Cloudinary URL instead of local path
 
         return songRepository.save(song);
     }
