@@ -24,28 +24,29 @@ public class SongServiceImpl implements SongService {
     }
 
     @Override
-    public Song uploadSong(MultipartFile file, MultipartFile image, String title, String artist) throws IOException {
+    public Song uploadSong(MultipartFile file, MultipartFile image, String title, String artist, String category) throws IOException {
 
         // ✅ Upload audio to Cloudinary
         Map<?, ?> audioUpload = cloudinary.uploader().upload(
                 file.getBytes(),
-                ObjectUtils.asMap("resource_type", "video") // audio uploaded as video
+                ObjectUtils.asMap("resource_type", "video")
         );
         String audioUrl = (String) audioUpload.get("secure_url");
 
         // ✅ Upload image to Cloudinary
         Map<?, ?> imageUpload = cloudinary.uploader().upload(
                 image.getBytes(),
-                ObjectUtils.emptyMap() // default image upload
+                ObjectUtils.emptyMap()
         );
         String imageUrl = (String) imageUpload.get("secure_url");
 
-        // ✅ Save song record in DB
+        // ✅ Save to DB
         Song song = new Song();
         song.setTitle(title);
         song.setArtist(artist);
+        song.setCategory(category); // ✅ NEW FIELD
         song.setAudioUrl(audioUrl);
-        song.setImagePath(imageUrl); // store Cloudinary URL instead of local path
+        song.setImagePath(imageUrl);
 
         return songRepository.save(song);
     }
@@ -57,6 +58,8 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public List<Song> searchSongs(String query) {
-        return songRepository.findByTitleContainingIgnoreCaseOrArtistContainingIgnoreCase(query, query);
+        return songRepository.findByTitleContainingIgnoreCaseOrArtistContainingIgnoreCaseOrCategoryContainingIgnoreCase(
+                query, query, query
+        );
     }
 }

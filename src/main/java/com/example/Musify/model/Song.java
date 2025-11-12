@@ -10,41 +10,25 @@ public class Song {
     private String id;
     private String title;
     private String artist;
-    private String audioUrl;  // Cloudinary song URL
-    private String imagePath; // Local image path (like /images/file.jpg)
+    private String audioUrl;  
+    private String imagePath; 
+    private String category; // ✅ NEW FIELD
 
-    public String getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public String getTitle() {
-        return title;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getArtist() {
-        return artist;
-    }
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
+    public String getArtist() { return artist; }
+    public void setArtist(String artist) { this.artist = artist; }
 
-    public String getAudioUrl() {
-        return audioUrl;
-    }
-    public void setAudioUrl(String audioUrl) {
-        this.audioUrl = audioUrl;
-    }
+    public String getAudioUrl() { return audioUrl; }
+    public void setAudioUrl(String audioUrl) { this.audioUrl = audioUrl; }
 
-    public String getImagePath() {
-        return imagePath;
-    }
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+
+    public String getCategory() { return category; } // ✅ Getter
+    public void setCategory(String category) { this.category = category; } // ✅ Setter
 }
