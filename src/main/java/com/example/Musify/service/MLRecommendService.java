@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -38,12 +39,13 @@ public class MLRecommendService {
     }
 
     // ✅ Get next recommended song
-    public Map<String, Object> getNextSong(String userId, String currentSongId) {
-        Map<String, String> body = new HashMap<>();
+    public Map<String, Object> getNextSong(String userId, String currentSongId, List<Map<String, Object>> history) {
+        Map<String, Object> body = new HashMap<>();
         body.put("user_id", userId);
         body.put("id", currentSongId);
+        body.put("history", history != null ? history : new java.util.ArrayList<>());
 
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(body);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 NEXT_SONG_URL,
@@ -56,11 +58,12 @@ public class MLRecommendService {
     }
 
     // ✅ Get home recommendations
-    public Map<String, Object> getHomeRecommendations(String userId) {
-        Map<String, String> body = new HashMap<>();
+    public Map<String, Object> getHomeRecommendations(String userId, List<Map<String, Object>> history) {
+        Map<String, Object> body = new HashMap<>();
         body.put("user_id", userId);
+        body.put("history", history != null ? history : new java.util.ArrayList<>());
 
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(body);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 HOME_RECOMMEND_URL,
